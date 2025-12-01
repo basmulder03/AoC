@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "AoC.SourceGenerator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../AoC.Tool/AoC.Tool.csproj"
+    }
+  }
+}

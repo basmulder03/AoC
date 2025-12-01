@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/solutions/">
+    <Project Path="solutions/AoC.Y2025/AoC.Y2025.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AoC.Core/AoC.Core.csproj" />
+    <Project Path="src/AoC.Shared/AoC.Shared.csproj" />
+    <Project Path="src/AoC.SourceGenerator/AoC.SourceGenerator.csproj" />
+    <Project Path="src/AoC.Tool/AoC.Tool.csproj" />
+  </Folder>
+</Solution>
