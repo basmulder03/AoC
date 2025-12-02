@@ -1,6 +1,6 @@
 ﻿using AoC.Core;
 
-namespace AoC.Y2025;
+namespace AoC.Tool.Days.Y2025;
 
 [AoCDay(2025, 1)]
 public sealed class Day01 : IAoCDay

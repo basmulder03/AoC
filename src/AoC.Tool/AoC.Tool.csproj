@@ -30,6 +30,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Aoc.SourceGenerator\Aoc.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\solutions\AoC.Y2025\AoC.Y2025.csproj" />
   </ItemGroup>
 </Project>

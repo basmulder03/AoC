@@ -11,7 +11,7 @@ public class AoCDayRegistryGenerator : IIncrementalGenerator
     { 
         var dayClasses = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                "AoCDayAttribute",
+                "AoC.Core.AoCDayAttribute",
                 static (node, _) => node is ClassDeclarationSyntax,
                 static (ctx, _) => ctx
             )
