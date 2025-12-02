@@ -7,4 +7,8 @@
     <Project Path="src/AoC.SourceGenerator/AoC.SourceGenerator.csproj" />
     <Project Path="src/AoC.Tool/AoC.Tool.csproj" />
   </Folder>
+  <Folder Name="/solutions/">
+    <Project Path="solutions/AoC.Y2025/AoC.Y2025.csproj" />
+    <Project Path="solutions/AoC.Y2024/AoC.Y2024.csproj" />
+  </Folder>
 </Solution>

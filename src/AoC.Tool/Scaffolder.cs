@@ -122,9 +122,7 @@ internal static class Scaffolder
                "    <Nullable>enable</Nullable>" + Environment.NewLine +
                "  </PropertyGroup>" + Environment.NewLine + Environment.NewLine +
                "  <ItemGroup>" + Environment.NewLine +
-               "    <ProjectReference Include=\"..\\..\\src\\AoC.Tool\\AoC.Tool.csproj\" />" + Environment.NewLine +
-               "  </ItemGroup>" + Environment.NewLine + Environment.NewLine +
-               "  <ItemGroup>" + Environment.NewLine +
+               "    <ProjectReference Include=\"..\\..\\src\\AoC.Shared\\AoC.Shared.csproj\" />" + Environment.NewLine +
                "    <ProjectReference Include=\"..\\..\\src\\AoC.SourceGenerator\\AoC.SourceGenerator.csproj\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />" + Environment.NewLine +
                "  </ItemGroup>" + Environment.NewLine +
                "</Project>";
@@ -153,23 +151,23 @@ internal static class Scaffolder
         if (!content.Contains("<Folder Name=\"/solutions/\">"))
         {
             // Add solutions folder after src folder
-            var srcFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/src/\">"));
+            var srcFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/src/\">", StringComparison.Ordinal), StringComparison.Ordinal);
             if (srcFolderEnd != -1)
             {
-                srcFolderEnd = content.IndexOf("  </Folder>", srcFolderEnd) + "  </Folder>".Length;
+                srcFolderEnd = content.IndexOf("  </Folder>", srcFolderEnd, StringComparison.Ordinal) + "  </Folder>".Length;
                 content = content.Insert(srcFolderEnd, Environment.NewLine + solutionsFolder + projectPath.Replace("solutions/", "") + "\" />" + Environment.NewLine + "  </Folder>");
             }
         }
         else
         {
             // Add project to existing solutions folder
-            var solutionsFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/solutions/\">"));
+            var solutionsFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/solutions/\">", StringComparison.Ordinal), StringComparison.Ordinal);
             if (solutionsFolderEnd != -1)
             {
-                var insertPoint = content.LastIndexOf("    <Project Path=\"", solutionsFolderEnd);
+                var insertPoint = content.LastIndexOf("    <Project Path=\"", solutionsFolderEnd, StringComparison.Ordinal);
                 if (insertPoint != -1)
                 {
-                    var lineEnd = content.IndexOf(Environment.NewLine, insertPoint);
+                    var lineEnd = content.IndexOf(Environment.NewLine, insertPoint, StringComparison.Ordinal);
                     if (lineEnd != -1)
                     {
                         content = content.Insert(lineEnd, Environment.NewLine + "    <Project Path=\"" + projectPath + "\" />");
@@ -178,7 +176,7 @@ internal static class Scaffolder
                 else
                 {
                     // No existing projects in solutions folder
-                    var folderStart = content.IndexOf(">", content.IndexOf("<Folder Name=\"/solutions/\">")) + 1;
+                    var folderStart = content.IndexOf('>', content.IndexOf("<Folder Name=\"/solutions/\">", StringComparison.Ordinal)) + 1;
                     content = content.Insert(folderStart, Environment.NewLine + "    <Project Path=\"" + projectPath + "\" />");
                 }
             }
@@ -195,9 +193,9 @@ internal static class Scaffolder
         var ns = $"AoC.Y{year}.Days";
         var className = $"Day{day:00}";
 
-        return $"using AoC.Tool;" + Environment.NewLine + Environment.NewLine +
+        return $"using AoC.SourceGenerator;" + Environment.NewLine + Environment.NewLine +
                $"namespace {ns};" + Environment.NewLine + Environment.NewLine +
-               $"[AoCDay({year}, {day})]" + Environment.NewLine +
+               $"[AoCDay({day})]" + Environment.NewLine +
                $"public sealed class {className} : IAoCDay" + Environment.NewLine +
                "{" + Environment.NewLine +
                "    public string Part1(string input)" + Environment.NewLine +
