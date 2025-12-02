@@ -22,11 +22,11 @@ public class RunCommand : BaseCommand
             return 1;
         }
 
-        if (!AoCMainRegistry.TryGetDay(options.Year, options.Day, out var dayImpl) || dayImpl is null)
-        {
-            WriteError($"No implementation found for {options.Year} day {options.Day:D2}");
-            return 2;
-        }
+        // if (!AoCRegistry.TryGetDay(options.Year, options.Day, out var dayImpl) || dayImpl is null)
+        // {
+        //     WriteError($"No implementation found for {options.Year} day {options.Day:D2}");
+        //     return 2;
+        // }
 
         // Resolve input
         var input = await InputResolver.ResolveInputAsync(
@@ -41,9 +41,10 @@ public class RunCommand : BaseCommand
             return 3;
         }
 
-        return options.Benchmark 
-            ? _executionService.RunBenchmark(dayImpl, options.Year, options.Day, input, options.Part, options.BenchmarkCount)
-            : _executionService.RunOnce(dayImpl, options.Year, options.Day, input, options.Part, options.TimingEnabled);
+        return 0;
+        // return options.Benchmark 
+        //     ? _executionService.RunBenchmark(dayImpl, options.Year, options.Day, input, options.Part, options.BenchmarkCount)
+        //     : _executionService.RunOnce(dayImpl, options.Year, options.Day, input, options.Part, options.TimingEnabled);
     }
 
     private static void PrintUsage()

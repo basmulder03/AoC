@@ -24,11 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Aoc.Core\Aoc.Core.csproj" />
-    <ProjectReference Include="..\Aoc.Shared\Aoc.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Aoc.SourceGenerator\Aoc.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

@@ -3,10 +3,8 @@
     <File Path=".gitignore" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/AoC.Core/AoC.Core.csproj" />
     <Project Path="src/AoC.Shared/AoC.Shared.csproj" />
     <Project Path="src/AoC.SourceGenerator/AoC.SourceGenerator.csproj" />
     <Project Path="src/AoC.Tool/AoC.Tool.csproj" />
   </Folder>
-  <Folder Name="/solutions/" />
 </Solution>

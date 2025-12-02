@@ -122,7 +122,7 @@ internal static class Scaffolder
                "    <Nullable>enable</Nullable>" + Environment.NewLine +
                "  </PropertyGroup>" + Environment.NewLine + Environment.NewLine +
                "  <ItemGroup>" + Environment.NewLine +
-               "    <ProjectReference Include=\"..\\..\\src\\AoC.Core\\AoC.Core.csproj\" />" + Environment.NewLine +
+               "    <ProjectReference Include=\"..\\..\\src\\AoC.Tool\\AoC.Tool.csproj\" />" + Environment.NewLine +
                "  </ItemGroup>" + Environment.NewLine + Environment.NewLine +
                "  <ItemGroup>" + Environment.NewLine +
                "    <ProjectReference Include=\"..\\..\\src\\AoC.SourceGenerator\\AoC.SourceGenerator.csproj\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />" + Environment.NewLine +
@@ -195,7 +195,7 @@ internal static class Scaffolder
         var ns = $"AoC.Y{year}.Days";
         var className = $"Day{day:00}";
 
-        return $"using AoC.Core;" + Environment.NewLine + Environment.NewLine +
+        return $"using AoC.Tool;" + Environment.NewLine + Environment.NewLine +
                $"namespace {ns};" + Environment.NewLine + Environment.NewLine +
                $"[AoCDay({year}, {day})]" + Environment.NewLine +
                $"public sealed class {className} : IAoCDay" + Environment.NewLine +

@@ -1,4 +1,4 @@
-﻿namespace AoC.Core;
+﻿namespace AoC.Tool;
 
 public sealed class InputLoader
 {
