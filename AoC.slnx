@@ -8,4 +8,5 @@
     <Project Path="src/AoC.SourceGenerator/AoC.SourceGenerator.csproj" />
     <Project Path="src/AoC.Tool/AoC.Tool.csproj" />
   </Folder>
+  <Folder Name="/solutions/" />
 </Solution>

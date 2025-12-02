@@ -1,6 +1,4 @@
-﻿using AoC.Core;
-using AoC.Tool.Models;
-using AoC.Tool.Parsers;
+﻿using AoC.Tool.Parsers;
 using AoC.Tool.Services;
 
 namespace AoC.Tool.Commands;
@@ -24,7 +22,7 @@ public class RunCommand : BaseCommand
             return 1;
         }
 
-        if (!AoCRegistry.TryGet(options.Year, options.Day, out var dayImpl) || dayImpl is null)
+        if (!AoCMainRegistry.TryGetDay(options.Year, options.Day, out var dayImpl) || dayImpl is null)
         {
             WriteError($"No implementation found for {options.Year} day {options.Day:D2}");
             return 2;

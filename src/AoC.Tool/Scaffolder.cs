@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 
 namespace AoC.Tool;
 
@@ -14,15 +13,22 @@ internal static class Scaffolder
             return 1;
         }
 
-        var toolProjectDir = Path.Combine(repoRoot, "src", "AoC.Tool");
-        var yearDir = Path.Combine(toolProjectDir, "Days", $"Y{year}");
-        var dayFilePath = Path.Combine(yearDir, $"Day{day:00}.cs");
-        var inputsYearDir = Path.Combine(toolProjectDir, "inputs", $"{year}");
+        // Create year project if it doesn't exist
+        var yearProjectResult = await EnsureYearProjectAsync(repoRoot, year, force);
+        if (yearProjectResult != 0)
+        {
+            return yearProjectResult;
+        }
+
+        var yearProjectDir = Path.Combine(repoRoot, "solutions", $"AoC.Y{year}");
+        var daysDir = Path.Combine(yearProjectDir, "Days");
+        var dayFilePath = Path.Combine(daysDir, $"Day{day:00}.cs");
+        var inputsYearDir = Path.Combine(yearProjectDir, "inputs");
         var inputsDayDir = Path.Combine(inputsYearDir, $"{day:00}");
         var samplePath = Path.Combine(inputsDayDir, "sample.txt");
         var inputPath = Path.Combine(inputsDayDir, "input.txt");
 
-        Directory.CreateDirectory(yearDir);
+        Directory.CreateDirectory(daysDir);
         Directory.CreateDirectory(inputsDayDir);
 
         // Day class
@@ -52,19 +58,13 @@ internal static class Scaffolder
         }
 
         Console.WriteLine();
-        Console.WriteLine($"Scaffolded {year} Day {day:00} successfully in AoC.Tool project.");
-        
-        // Trigger a rebuild to run source generators
-        Console.WriteLine("Rebuilding project to generate registry...");
-        var buildResult = await RebuildProjectAsync(repoRoot);
-        if (buildResult != 0)
-        {
-            Console.WriteLine("Warning: Project rebuild failed. You may need to rebuild manually.");
-        }
-        else
-        {
-            Console.WriteLine("Project rebuilt successfully. Source generators have been executed.");
-        }
+        Console.WriteLine($"Scaffolded {year} Day {day:00} successfully in AoC.Y{year} project.");
+        Console.WriteLine();
+        Console.WriteLine("Next steps:");
+        Console.WriteLine("  1. Edit the day implementation in the generated file");
+        Console.WriteLine("  2. Add sample input to the sample.txt file");
+        Console.WriteLine("  3. Run 'dotnet build' to generate registries");
+        Console.WriteLine($"  4. Test with: aoc run {year} {day} --sample");
         
         return 0;
     }
@@ -88,75 +88,128 @@ internal static class Scaffolder
         return null;
     }
 
-    private static async Task<int> RebuildProjectAsync(string repoRoot)
+
+
+    private static async Task<int> EnsureYearProjectAsync(string repoRoot, int year, bool force)
     {
-        try
+        var solutionsDir = Path.Combine(repoRoot, "solutions");
+        var yearProjectDir = Path.Combine(solutionsDir, $"AoC.Y{year}");
+        var yearProjectFile = Path.Combine(yearProjectDir, $"AoC.Y{year}.csproj");
+        
+        Directory.CreateDirectory(solutionsDir);
+        
+        if (!File.Exists(yearProjectFile) || force)
         {
-            var toolProjectPath = Path.Combine(repoRoot, "src", "AoC.Tool", "AoC.Tool.csproj");
+            Directory.CreateDirectory(yearProjectDir);
             
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"build \"{toolProjectPath}\" --configuration Debug",
-                WorkingDirectory = repoRoot,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
+            var projectContent = GenerateYearProjectFile(year);
+            await File.WriteAllTextAsync(yearProjectFile, projectContent, Encoding.UTF8);
+            Console.WriteLine($"{(force ? "Overwrote" : "Created")} year project: {yearProjectFile}");
+            
+            // Add to solution file
+            await AddProjectToSolutionAsync(repoRoot, $"solutions/AoC.Y{year}/AoC.Y{year}.csproj");
+        }
+        
+        return 0;
+    }
 
-            using var process = Process.Start(processInfo);
-            if (process == null)
+    private static string GenerateYearProjectFile(int year)
+    {
+        return "<Project Sdk=\"Microsoft.NET.Sdk\">" + Environment.NewLine +
+               "  <PropertyGroup>" + Environment.NewLine +
+               "    <TargetFramework>net10.0</TargetFramework>" + Environment.NewLine +
+               "    <ImplicitUsings>enable</ImplicitUsings>" + Environment.NewLine +
+               "    <Nullable>enable</Nullable>" + Environment.NewLine +
+               "  </PropertyGroup>" + Environment.NewLine + Environment.NewLine +
+               "  <ItemGroup>" + Environment.NewLine +
+               "    <ProjectReference Include=\"..\\..\\src\\AoC.Core\\AoC.Core.csproj\" />" + Environment.NewLine +
+               "  </ItemGroup>" + Environment.NewLine + Environment.NewLine +
+               "  <ItemGroup>" + Environment.NewLine +
+               "    <ProjectReference Include=\"..\\..\\src\\AoC.SourceGenerator\\AoC.SourceGenerator.csproj\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />" + Environment.NewLine +
+               "  </ItemGroup>" + Environment.NewLine +
+               "</Project>";
+    }
+
+    private static async Task AddProjectToSolutionAsync(string repoRoot, string projectPath)
+    {
+        var solutionFile = Path.Combine(repoRoot, "AoC.slnx");
+        if (!File.Exists(solutionFile))
+        {
+            return;
+        }
+
+        var content = await File.ReadAllTextAsync(solutionFile);
+        
+        // Check if project is already in the solution
+        if (content.Contains(projectPath))
+        {
+            return;
+        }
+
+        // Find the end of src folder and add solutions folder if it doesn't exist
+        var solutionsFolder = "  <Folder Name=\"/solutions/\">" + Environment.NewLine + 
+                             "    <Project Path=\"solutions/";
+
+        if (!content.Contains("<Folder Name=\"/solutions/\">"))
+        {
+            // Add solutions folder after src folder
+            var srcFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/src/\">"));
+            if (srcFolderEnd != -1)
             {
-                Console.WriteLine("Failed to start dotnet build process.");
-                return 1;
+                srcFolderEnd = content.IndexOf("  </Folder>", srcFolderEnd) + "  </Folder>".Length;
+                content = content.Insert(srcFolderEnd, Environment.NewLine + solutionsFolder + projectPath.Replace("solutions/", "") + "\" />" + Environment.NewLine + "  </Folder>");
             }
-
-            await process.WaitForExitAsync();
-            
-            if (process.ExitCode != 0)
+        }
+        else
+        {
+            // Add project to existing solutions folder
+            var solutionsFolderEnd = content.IndexOf("  </Folder>", content.IndexOf("<Folder Name=\"/solutions/\">"));
+            if (solutionsFolderEnd != -1)
             {
-                var error = await process.StandardError.ReadToEndAsync();
-                if (!string.IsNullOrWhiteSpace(error))
+                var insertPoint = content.LastIndexOf("    <Project Path=\"", solutionsFolderEnd);
+                if (insertPoint != -1)
                 {
-                    Console.WriteLine($"Build error: {error}");
+                    var lineEnd = content.IndexOf(Environment.NewLine, insertPoint);
+                    if (lineEnd != -1)
+                    {
+                        content = content.Insert(lineEnd, Environment.NewLine + "    <Project Path=\"" + projectPath + "\" />");
+                    }
+                }
+                else
+                {
+                    // No existing projects in solutions folder
+                    var folderStart = content.IndexOf(">", content.IndexOf("<Folder Name=\"/solutions/\">")) + 1;
+                    content = content.Insert(folderStart, Environment.NewLine + "    <Project Path=\"" + projectPath + "\" />");
                 }
             }
+        }
 
-            return process.ExitCode;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception during build: {ex.Message}");
-            return 1;
-        }
+        await File.WriteAllTextAsync(solutionFile, content);
+        Console.WriteLine($"Added project to solution: {projectPath}");
     }
+
+
 
     private static string GenerateDaySource(int year, int day)
     {
-        var ns = $"AoC.Tool.Days.Y{year}";
+        var ns = $"AoC.Y{year}.Days";
         var className = $"Day{day:00}";
 
-        return $$"""
-                using AoC.Core;
-
-                namespace {{ns}};
-
-                [AoCDay({{year}}, {{day}})]
-                public sealed class {{className}} : IAoCDay
-                {
-                    public string Part1(string input)
-                    {
-                        // TODO: Part 1 implementation
-                        return string.Empty;
-                    }
-
-                    public string Part2(string input)
-                    {
-                        // TODO: Part 2 implementation
-                        return string.Empty;
-                    }
-                }
-                """;
+        return $"using AoC.Core;" + Environment.NewLine + Environment.NewLine +
+               $"namespace {ns};" + Environment.NewLine + Environment.NewLine +
+               $"[AoCDay({year}, {day})]" + Environment.NewLine +
+               $"public sealed class {className} : IAoCDay" + Environment.NewLine +
+               "{" + Environment.NewLine +
+               "    public string Part1(string input)" + Environment.NewLine +
+               "    {" + Environment.NewLine +
+               "        // TODO: Part 1 implementation" + Environment.NewLine +
+               "        return string.Empty;" + Environment.NewLine +
+               "    }" + Environment.NewLine + Environment.NewLine +
+               "    public string Part2(string input)" + Environment.NewLine +
+               "    {" + Environment.NewLine +
+               "        // TODO: Part 2 implementation" + Environment.NewLine +
+               "        return string.Empty;" + Environment.NewLine +
+               "    }" + Environment.NewLine +
+               "}";
     }
 }
