@@ -53,6 +53,19 @@ internal static class Scaffolder
 
         Console.WriteLine();
         Console.WriteLine($"Scaffolded {year} Day {day:00} successfully in AoC.Tool project.");
+        
+        // Trigger a rebuild to run source generators
+        Console.WriteLine("Rebuilding project to generate registry...");
+        var buildResult = await RebuildProjectAsync(repoRoot);
+        if (buildResult != 0)
+        {
+            Console.WriteLine("Warning: Project rebuild failed. You may need to rebuild manually.");
+        }
+        else
+        {
+            Console.WriteLine("Project rebuilt successfully. Source generators have been executed.");
+        }
+        
         return 0;
     }
 
@@ -73,6 +86,50 @@ internal static class Scaffolder
         }
 
         return null;
+    }
+
+    private static async Task<int> RebuildProjectAsync(string repoRoot)
+    {
+        try
+        {
+            var toolProjectPath = Path.Combine(repoRoot, "src", "AoC.Tool", "AoC.Tool.csproj");
+            
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"build \"{toolProjectPath}\" --configuration Debug",
+                WorkingDirectory = repoRoot,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(processInfo);
+            if (process == null)
+            {
+                Console.WriteLine("Failed to start dotnet build process.");
+                return 1;
+            }
+
+            await process.WaitForExitAsync();
+            
+            if (process.ExitCode != 0)
+            {
+                var error = await process.StandardError.ReadToEndAsync();
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    Console.WriteLine($"Build error: {error}");
+                }
+            }
+
+            return process.ExitCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during build: {ex.Message}");
+            return 1;
+        }
     }
 
     private static string GenerateDaySource(int year, int day)

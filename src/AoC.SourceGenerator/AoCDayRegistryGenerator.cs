@@ -66,6 +66,7 @@ public class AoCDayRegistryGenerator : IIncrementalGenerator
                                    {
                                        private static readonly Dictionary<(int year, int day), IAoCDay> _days = new()
                                        {
+
                                    """);
         foreach (var (year, day, fqName) in entries.OrderBy(e => e.year).ThenBy(e => e.day))
         {
@@ -73,7 +74,6 @@ public class AoCDayRegistryGenerator : IIncrementalGenerator
         }
 
         sb.AppendLine("""
-
                           };
 
                           public static bool TryGet(int year, int day, out IAoCDay? dayInstance)

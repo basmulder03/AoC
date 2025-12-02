@@ -1,21 +1,22 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AoC.Tool;
+
+[JsonSerializable(typeof(AoCConfig))]
+internal partial class AoCConfigContext : JsonSerializerContext
+{
+}
 
 internal static class CookieManager
 {
     private const string AppFolderName = "AoC.Tool";
     private const string ConfigFileName = "config.json";
-    
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
 
     public static async Task<string?> GetSessionCookieAsync()
     {
         var cfg = await LoadAsync();
-        return cfg.SessionCookie;
+        return cfg?.SessionCookie;
     }
 
     public static async Task SetSessionCookieAsync(string sessionCookie)
@@ -53,15 +54,19 @@ internal static class CookieManager
         }
 
         var json = await File.ReadAllTextAsync(path);
-        return JsonSerializer.Deserialize<AoCConfig>(json);
+        return JsonSerializer.Deserialize<AoCConfig>(json, AoCConfigContext.Default.AoCConfig);
     }
 
     private static async Task SaveAsync(AoCConfig cfg)
     {
         var path = GetConfigPath();
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        var directory = Path.GetDirectoryName(path);
+        if (directory is not null)
+        {
+            Directory.CreateDirectory(directory);
+        }
 
-        var json = JsonSerializer.Serialize(cfg, JsonOptions);
+        var json = JsonSerializer.Serialize(cfg, AoCConfigContext.Default.AoCConfig);
         await File.WriteAllTextAsync(path, json);
     }
 
